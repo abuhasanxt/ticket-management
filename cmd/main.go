@@ -37,13 +37,14 @@ func main() {
 
 		TranslateError: true,
 	})
-	db.AutoMigrate(&Users{})
-
+	
 	if err != nil {
 		panic("failed to connect database")
-	} else {
-		fmt.Println("Database connect successfully!")
-	}
+		} else {
+			fmt.Println("Database connect successfully!")
+		}
+		
+		db.AutoMigrate(&Users{})
 
 	e := echo.New()
 	e.Use(middleware.RequestLogger())
@@ -70,7 +71,7 @@ func main() {
 result:=db.Create(&newUser)
 
 if result.Error!=nil {
-  c.JSON(http.StatusInternalServerError,map[string]any{"error":err.Error()})
+  return c.JSON(http.StatusInternalServerError,map[string]any{"error":result.Error.Error()})
 }
 		return c.JSON(http.StatusCreated, newUser)
 	})
