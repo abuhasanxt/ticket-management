@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -11,9 +12,10 @@ import (
 )
 
 type Users struct {
-	Name     string `json:"name" validate:"required"`
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=6"`
+	gorm.Model
+	Name     string `json:"name" validate:"required" gorm:"type:varchar(100); not null"`
+	Email    string `json:"email" validate:"required,email" gorm:"type:varchar(250); uniqueIndex; not null"`
+	Password string `json:"password" validate:"required,min=6" gorm:"type:varchar(100); not null"`
 }
 
 type CustomValidator struct {
@@ -30,12 +32,18 @@ func (cv *CustomValidator) Validate(i any) error {
 
 func main() {
 
-	dsn := "host=localhost user=gorm password=gorm dbname=gotickets port=9920 sslmode=disable TimeZone=Asia/Shanghai"
-	_, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	dsn := "host=localhost user=postgres password=abu##228 dbname=gotickets port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 
-  if err !=nil {
-    panic("failed to connect database")
-  }
+		TranslateError: true,
+	})
+	db.AutoMigrate(&Users{})
+
+	if err != nil {
+		panic("failed to connect database")
+	} else {
+		fmt.Println("Database connect successfully!")
+	}
 
 	e := echo.New()
 	e.Use(middleware.RequestLogger())
@@ -47,20 +55,24 @@ func main() {
 
 	e.Validator = &CustomValidator{validator: validator.New()}
 	e.POST("/users", func(c *echo.Context) error {
-		u := new(Users)
+		newUser := new(Users)
 
 		//binding the user data
-		if err := c.Bind(u); err != nil {
+		if err := c.Bind(newUser); err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]any{"error": err.Error()})
 
 		}
 		//validating the user data
-		if err := c.Validate(u); err != nil {
+		if err := c.Validate(newUser); err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]any{"error": err.Error()})
 		}
 		//save the database
+result:=db.Create(&newUser)
 
-		return c.JSON(http.StatusCreated, u)
+if result.Error!=nil {
+  c.JSON(http.StatusInternalServerError,map[string]any{"error":err.Error()})
+}
+		return c.JSON(http.StatusCreated, newUser)
 	})
 
 	if err := e.Start(":8080"); err != nil {
