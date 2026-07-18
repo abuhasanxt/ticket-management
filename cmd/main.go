@@ -6,6 +6,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 type Users struct {
@@ -27,14 +29,23 @@ func (cv *CustomValidator) Validate(i any) error {
 }
 
 func main() {
-	e := echo.New()
 
+	dsn := "host=localhost user=gorm password=gorm dbname=gotickets port=9920 sslmode=disable TimeZone=Asia/Shanghai"
+	_, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+
+  if err !=nil {
+    panic("failed to connect database")
+  }
+
+	e := echo.New()
 	e.Use(middleware.RequestLogger())
 	e.Use(middleware.Recover())
 
 	e.GET("/", func(c *echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{"message": "Hello, World!"})
 	})
+
+	e.Validator = &CustomValidator{validator: validator.New()}
 	e.POST("/users", func(c *echo.Context) error {
 		u := new(Users)
 
@@ -47,8 +58,8 @@ func main() {
 		if err := c.Validate(u); err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]any{"error": err.Error()})
 		}
+		//save the database
 
-		//process the user data (e.g,save the database)
 		return c.JSON(http.StatusCreated, u)
 	})
 
