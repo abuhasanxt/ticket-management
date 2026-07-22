@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"gotickets/internal/user"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -37,14 +38,14 @@ func main() {
 
 		TranslateError: true,
 	})
-	
+
 	if err != nil {
 		panic("failed to connect database")
-		} else {
-			fmt.Println("Database connect successfully!")
-		}
-		
-		db.AutoMigrate(&Users{})
+	} else {
+		fmt.Println("Database connect successfully!")
+	}
+
+	db.AutoMigrate(&Users{})
 
 	e := echo.New()
 	e.Use(middleware.RequestLogger())
@@ -55,26 +56,13 @@ func main() {
 	})
 
 	e.Validator = &CustomValidator{validator: validator.New()}
-	e.POST("/users", func(c *echo.Context) error {
-		newUser := new(Users)
 
-		//binding the user data
-		if err := c.Bind(newUser); err != nil {
-			return c.JSON(http.StatusBadRequest, map[string]any{"error": err.Error()})
+	
+	userRepository := user.NewRepository(db)
+	userService := user.NewService(userRepository)
+	userHandler := user.NewHandler(userService)
 
-		}
-		//validating the user data
-		if err := c.Validate(newUser); err != nil {
-			return c.JSON(http.StatusBadRequest, map[string]any{"error": err.Error()})
-		}
-		//save the database
-result:=db.Create(&newUser)
-
-if result.Error!=nil {
-  return c.JSON(http.StatusInternalServerError,map[string]any{"error":result.Error.Error()})
-}
-		return c.JSON(http.StatusCreated, newUser)
-	})
+	e.POST("/users", userHandler.CreateUser)
 
 	if err := e.Start(":8080"); err != nil {
 		e.Logger.Error("failed to start server", "error", err)
