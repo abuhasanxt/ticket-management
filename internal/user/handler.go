@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	httpresponse "gotickets/internal/httpResponse"
 	"gotickets/internal/user/dto"
 	"net/http"
@@ -39,7 +40,12 @@ func (h *handler) CreateUser(c *echo.Context) error {
 	}
 
 	response, err := h.service.CreateUser(req)
-
+if errors.Is(err,ErrorAlreadyExist) {
+	return c.JSON(http.StatusConflict,httpresponse.Error{
+		Code: http.StatusConflict,
+		Message: err.Error(),
+	})
+}
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, httpresponse.Error{
 			Code:    http.StatusInternalServerError,
