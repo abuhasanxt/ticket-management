@@ -40,13 +40,15 @@ func (h *handler) CreateUser(c *echo.Context) error {
 	}
 
 	response, err := h.service.CreateUser(req)
-if errors.Is(err,ErrorAlreadyExist) {
-	return c.JSON(http.StatusConflict,httpresponse.Error{
-		Code: http.StatusConflict,
-		Message: err.Error(),
-	})
-}
 	if err != nil {
+		if errors.Is(err, ErrorAlreadyExist) {
+			return c.JSON(http.StatusConflict, httpresponse.Error{
+				Code:    http.StatusConflict,
+				Message: "Failed to create user",
+				Details: err.Error(),
+			})
+		}
+
 		return c.JSON(http.StatusBadRequest, httpresponse.Error{
 			Code:    http.StatusInternalServerError,
 			Message: "Failed to create user",
