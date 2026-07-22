@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"gotickets/internal/config"
 	"gotickets/internal/user"
 	"net/http"
 
@@ -33,7 +34,9 @@ func (cv *CustomValidator) Validate(i any) error {
 
 func main() {
 
-	dsn := "host=localhost user=postgres password=abu##228 dbname=gotickets port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+config:=config.LoadEnv()
+
+	dsn := config.Dsn
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 
 		TranslateError: true,
@@ -57,12 +60,7 @@ func main() {
 
 	e.Validator = &CustomValidator{validator: validator.New()}
 
-	
-	userRepository := user.NewRepository(db)
-	userService := user.NewService(userRepository)
-	userHandler := user.NewHandler(userService)
-
-	e.POST("/users", userHandler.CreateUser)
+	user.RegisterRoutes(e, db)
 
 	if err := e.Start(":8080"); err != nil {
 		e.Logger.Error("failed to start server", "error", err)
