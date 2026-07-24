@@ -61,6 +61,9 @@ func (s *service) LoginUser(req dto.LoginRequest) (*dto.Response, error) {
 	if err != nil {
 		return nil, ErrInvalidCredentials
 	}
+
+//generate token 
+
 	response := dto.Response{
 		ID:        user.ID,
 		Name:      user.Name,
