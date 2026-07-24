@@ -99,3 +99,23 @@ return c.JSON(http.StatusInternalServerError,httpresponse.Error{
 
 return c.JSON(http.StatusOK,response)
 }
+
+
+func (h *handler)GetMe(c *echo.Context)error{
+	userId,ok:=c.Get("user_id").(uint)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized,httpresponse.Error{
+			Code: http.StatusUnauthorized,
+			Message: "Cannot ger user information",
+			Details: "Missing user id in context",
+		})
+	}
+	email, _ :=c.Get("user_email").(string)
+	name, _:= c.Get("user_name").(string)
+
+	return c.JSON(http.StatusOK,dto.Response{
+		ID: userId,
+		Name: name,
+		Email: email,
+	})
+}
