@@ -28,7 +28,7 @@ type jwtService struct{
 	tokenDuration time.Duration
 }
 
-func newJWTService (secretKey string,tokenDuration time.Duration)JWTService{
+func NewJWTService (secretKey string)JWTService{
 
 	if secretKey=="" {
 		secretKey=jwtSecretKey
@@ -52,7 +52,7 @@ func (js *jwtService)GenerateToken(userId uint,email string,name string)(string,
 			Issuer: "gotickets",
 		},
 	}
-	token:=jwt.NewWithClaims(jwt.SigningMethodES256,Claims) //creating token with claims
+	token:=jwt.NewWithClaims(jwt.SigningMethodHS256,Claims) //creating token with claims
 
 	tokenString,err:= token.SignedString([]byte(js.secretKey)) //sign token with secret key
 
