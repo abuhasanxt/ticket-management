@@ -21,20 +21,19 @@ func NewHandler(s *service) *handler {
 func eventErrorResponse(c *echo.Context, err error) error {
 	if errors.Is(err, ErrEventNotFound) {
 		return c.JSON(http.StatusNotFound, httpresponse.Error{
-			Code: http.StatusNotFound,
+			Code:    http.StatusNotFound,
 			Message: "Event not found",
 		})
 	}
 
-	return c.JSON(http.StatusInternalServerError,httpresponse.Error{
-		Code: http.StatusInternalServerError,
+	return c.JSON(http.StatusInternalServerError, httpresponse.Error{
+		Code:    http.StatusInternalServerError,
 		Message: "Something went wrong",
 		Details: err.Error(),
 	})
 }
 
-
-func (h *handler)CreateEvent(c *echo.Context)error{
+func (h *handler) CreateEvent(c *echo.Context) error {
 	var req dto.CreateRequest
 
 	if err := c.Bind(&req); err != nil {
@@ -54,12 +53,20 @@ func (h *handler)CreateEvent(c *echo.Context)error{
 		})
 	}
 
+	response, err := h.service.CreateEvent(req)
 
-	 response,err:=h.service.CreateEvent(req)
+	if err != nil {
+		eventErrorResponse(c, err)
+	}
 
-	 if err!=nil {
-		eventErrorResponse(c,err)
-	 }
+	return c.JSON(http.StatusCreated, response)
+}
 
-return  c.JSON(http.StatusCreated,response)
+func (h *handler) GetEvents(c *echo.Context) error {
+	events, err := h.service.GetEvents()
+	if err != nil {
+		return eventErrorResponse(c, err)
+	}
+
+	return c.JSON(http.StatusOK, events)
 }

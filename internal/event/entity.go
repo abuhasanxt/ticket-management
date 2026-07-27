@@ -12,7 +12,7 @@ type Event struct {
 	gorm.Model
 	Title            string    `json:"title" gorm:"type: varchar(150);not null"`
 	Description      string    `json:"description" gorm:"type:text"`
-	Location         string    `json:"location" gorm:"type:varchar(150): not null"`
+	Location         string    `json:"location" gorm:"type:varchar(150); not null"`
 	StartsAt         time.Time `json:"starts_at" gorm:"not null"`
 	TotalTickets     int       `json:"total_tickets" gorm:"not null"`
 	AvailableTickets int       `json:"available_tickets" gorm:"not null"`
