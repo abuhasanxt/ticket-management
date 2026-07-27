@@ -38,3 +38,14 @@ func (s *service) GetEvents() ([]dto.Response, error) {
 	}
 	return response, nil
 }
+
+
+
+func (s *service)GetEventByID(eventId uint)(*dto.Response,error){
+event,err:=s.repo.GetByID(eventId)
+
+if err!=nil {
+	return nil,err
+}
+return event.ToResponse(),nil
+}

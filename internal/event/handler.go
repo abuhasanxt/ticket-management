@@ -4,6 +4,7 @@ import (
 	"errors"
 	"gotickets/internal/event/dto"
 	httpresponse "gotickets/internal/httpResponse"
+	"strconv"
 
 	"net/http"
 
@@ -69,4 +70,21 @@ func (h *handler) GetEvents(c *echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, events)
+}
+
+func (h *handler) GetEventById(c *echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, httpresponse.Error{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid event id",
+			Details: err.Error(),
+		})
+	}
+	response, err := h.service.GetEventByID(uint(id))
+
+	if err != nil {
+		return eventErrorResponse(c, err)
+	}
+	return c.JSON(http.StatusOK,response)
 }
