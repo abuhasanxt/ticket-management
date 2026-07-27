@@ -39,13 +39,53 @@ func (s *service) GetEvents() ([]dto.Response, error) {
 	return response, nil
 }
 
+func (s *service) GetEventByID(eventId uint) (*dto.Response, error) {
+	event, err := s.repo.GetByID(eventId)
 
-
-func (s *service)GetEventByID(eventId uint)(*dto.Response,error){
-event,err:=s.repo.GetByID(eventId)
-
-if err!=nil {
-	return nil,err
+	if err != nil {
+		return nil, err
+	}
+	return event.ToResponse(), nil
 }
-return event.ToResponse(),nil
+
+func (s *service) UpdatedEvent(eventID uint, req *dto.UpdateRequest) (*dto.Response, error) {
+
+	event, err := s.repo.GetByID(eventID)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.Title != "" {
+		event.Title = req.Title
+	}
+
+	if req.Description != "" {
+		event.Description = req.Description
+	}
+
+	if req.Location != "" {
+		event.Location = req.Location
+	}
+
+	if !req.StartsAt.IsZero() {
+		event.StartsAt = req.StartsAt
+	}
+
+	if req.TotalTickets > 0 {
+
+		sold := event.TotalTickets - event.AvailableTickets
+
+		event.TotalTickets = req.TotalTickets
+		event.AvailableTickets = req.TotalTickets - sold
+	}
+
+	if req.Price >= 0 {
+		event.Price = req.Price
+	}
+
+	if err := s.repo.Update(event); err != nil {
+		return nil, err
+	}
+
+	return event.ToResponse(), nil
 }
