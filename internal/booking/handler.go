@@ -2,6 +2,7 @@ package booking
 
 import (
 	"errors"
+	"gotickets/internal/booking/dto"
 	"gotickets/internal/event"
 	httpresponse "gotickets/internal/httpResponse"
 	"net/http"
@@ -18,7 +19,7 @@ func NewHandler(s *service) *handler {
 
 }
 
-func gerCurrentUserById(c *echo.Context) (uint, bool) {
+func getCurrentUserById(c *echo.Context) (uint, bool) {
 
 	userId, ok := c.Get("user_id").(uint)
 	return userId, ok
@@ -61,4 +62,48 @@ func bookingErrorResponse(c *echo.Context, err error) error {
 		Message: "Internal server error",
 		Details: err.Error(),
 	})
+}
+
+
+
+
+
+func (h *handler)CreateBooking(c *echo.Context)error{
+	userId ,ok :=getCurrentUserById(c)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized,httpresponse.Error{
+			Code: http.StatusUnauthorized,
+			Message: "Unauthorized",
+		})
+	}
+
+	var req dto.CreateRequest
+	if err:=c.Bind(&req);err!=nil {
+		return c.JSON(http.StatusBadRequest,httpresponse.Error{
+			Code: http.StatusBadRequest,
+			Message: "Invalid request payload",
+			Details: err.Error(),
+		})
+		
+	}
+
+
+	if err:=c.Validate(&req);err!=nil {
+		return  c.JSON(http.StatusBadRequest,httpresponse.Error{
+			Code: http.StatusBadRequest,
+			Message: "Validation failed",
+			Details: err.Error(),
+		})
+	}
+
+
+
+
+	response ,err:=h.service.CreateBooking(userId,req)
+
+	if err!=nil {
+		return bookingErrorResponse(c,err)
+	}
+
+	return c.JSON(http.StatusCreated,response)
 }
