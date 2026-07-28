@@ -6,6 +6,7 @@ import (
 	"gotickets/internal/event"
 	httpresponse "gotickets/internal/httpResponse"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v5"
 )
@@ -114,4 +115,23 @@ func (h *handler) GetMyBookings(c *echo.Context) error {
 		return bookingErrorResponse(c, err)
 	}
 	return c.JSON(http.StatusOK, bookings)
+}
+
+
+func (h *handler)GetBookingById(c *echo.Context)error{
+	id, err := strconv.Atoi(c.Param("id"))
+	if err!=nil {
+		return c.JSON(http.StatusBadRequest,httpresponse.Error{
+			Code: http.StatusBadRequest,
+			Message: "Invalid Booking Id",
+			Details: err.Error(),
+		})
+	}
+
+	booking,err:=h.service.GetBookingByID(uint(id))
+
+	if err!=nil {
+		return bookingErrorResponse(c,err)
+	}
+	return c.JSON(http.StatusOK,booking)
 }
