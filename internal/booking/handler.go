@@ -135,3 +135,30 @@ func (h *handler)GetBookingById(c *echo.Context)error{
 	}
 	return c.JSON(http.StatusOK,booking)
 }
+
+func (h *handler) CancelledRequest(c *echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, httpresponse.Error{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid booking id",
+			Details: err.Error(),
+		})
+	}
+
+	
+	userID, ok := c.Get("user_id").(uint)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, httpresponse.Error{
+			Code:    http.StatusUnauthorized,
+			Message: "Unauthorized",
+		})
+	}
+
+	response, err := h.service.CancelledRequest(uint(id), userID)
+	if err != nil {
+		return bookingErrorResponse(c, err)
+	}
+
+	return c.JSON(http.StatusOK, response)
+}

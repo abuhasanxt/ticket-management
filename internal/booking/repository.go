@@ -17,6 +17,7 @@ type Repository interface {
 	Create(booking *Booking) error
 	GetByID(bookingId uint) (*Booking, error)
 	GetByUserID(userId uint) ([]*Booking, error)
+	GetByIDAndUserID(bookingId uint, userId uint) (*Booking, error)
 	Update(booking *Booking) error
 }
 
@@ -57,4 +58,20 @@ func (r *repository) GetByUserID(userId uint) ([]*Booking, error) {
 
 func (r *repository) Update(booking *Booking) error {
 	return r.db.Save(booking).Error
+}
+
+
+func (r *repository) GetByIDAndUserID(bookingID uint, userID uint) (*Booking, error) {
+
+    var booking Booking
+
+    err := r.db.
+        Where("id = ? AND user_id = ?", bookingID, userID).
+        First(&booking).Error
+
+    if err != nil {
+        return nil, err
+    }
+
+    return &booking, nil
 }
