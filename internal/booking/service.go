@@ -19,12 +19,9 @@ func NewService(bookingRepo Repository, eventRepo event.Repository) *service {
 	}
 }
 
-
 func generateBookingCode() string {
 	return "GT-" + uuid.New().String()
 }
-
-
 
 func (s *service) CreateBooking(userId uint, req dto.CreateRequest) (*dto.Response, error) {
 
@@ -46,15 +43,31 @@ func (s *service) CreateBooking(userId uint, req dto.CreateRequest) (*dto.Respon
 		BookingCode: generateBookingCode(),
 	}
 
-if err:=	s.bookingRepo.Create(booking);err!=nil{
-	return nil,err
+	if err := s.bookingRepo.Create(booking); err != nil {
+		return nil, err
+	}
+
+	event.AvailableTickets = event.AvailableTickets - req.Quantity
+
+	if err := s.eventRepo.Update(event); err != nil {
+		return nil, err
+	}
+
+	return booking.ToResponse(), nil
 }
 
-event.AvailableTickets=event.AvailableTickets-req.Quantity
+func (s *service) GetMyBookings(userId uint) ([]*dto.Response, error) {
 
-if err:=s.eventRepo.Update(event);err!=nil{
-	return  nil,err
-}
+	bookings, err := s.bookingRepo.GetByUserID(userId)
+	if err != nil {
+		return nil, err
+	}
 
-return booking.ToResponse(),nil
+	response := make([]*dto.Response, len(bookings))
+
+	for i, b := range bookings {
+		response[i] = b.ToResponse()
+	}
+	return response, nil
+
 }

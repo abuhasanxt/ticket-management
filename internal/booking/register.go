@@ -12,15 +12,16 @@ import (
 
 func RegisterRoutes(e *echo.Echo, db *gorm.DB, cfg *config.Config) {
 	bookingRepo := NewRepository(db)
-	eventRepo :=event.NewRepository(db)
+	eventRepo := event.NewRepository(db)
 
-	svc := NewService(bookingRepo,eventRepo)
+	svc := NewService(bookingRepo, eventRepo)
 	handler := NewHandler(svc)
-	jwtService:=auth.NewJWTService(cfg.JwtSecret)
+	jwtService := auth.NewJWTService(cfg.JwtSecret)
 
-	api := e.Group("/api/v1/bookings",middleware.AuthMiddleware(jwtService))
+	api := e.Group("/api/v1/bookings", middleware.AuthMiddleware(jwtService))
 
 	api.POST("", handler.CreateBooking)
+	api.GET("/me", handler.GetMyBookings)
 	// api.GET("", handler.GetEvents)
 	// api.GET("/:id", handler.GetEventById)
 	// api.PATCH("/:id", handler.UpdatedEvent)

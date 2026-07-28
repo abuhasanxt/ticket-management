@@ -64,46 +64,54 @@ func bookingErrorResponse(c *echo.Context, err error) error {
 	})
 }
 
-
-
-
-
-func (h *handler)CreateBooking(c *echo.Context)error{
-	userId ,ok :=getCurrentUserById(c)
+func (h *handler) CreateBooking(c *echo.Context) error {
+	userId, ok := getCurrentUserById(c)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized,httpresponse.Error{
-			Code: http.StatusUnauthorized,
+		return c.JSON(http.StatusUnauthorized, httpresponse.Error{
+			Code:    http.StatusUnauthorized,
 			Message: "Unauthorized",
 		})
 	}
 
 	var req dto.CreateRequest
-	if err:=c.Bind(&req);err!=nil {
-		return c.JSON(http.StatusBadRequest,httpresponse.Error{
-			Code: http.StatusBadRequest,
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, httpresponse.Error{
+			Code:    http.StatusBadRequest,
 			Message: "Invalid request payload",
 			Details: err.Error(),
 		})
-		
+
 	}
 
-
-	if err:=c.Validate(&req);err!=nil {
-		return  c.JSON(http.StatusBadRequest,httpresponse.Error{
-			Code: http.StatusBadRequest,
+	if err := c.Validate(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, httpresponse.Error{
+			Code:    http.StatusBadRequest,
 			Message: "Validation failed",
 			Details: err.Error(),
 		})
 	}
 
+	response, err := h.service.CreateBooking(userId, req)
 
-
-
-	response ,err:=h.service.CreateBooking(userId,req)
-
-	if err!=nil {
-		return bookingErrorResponse(c,err)
+	if err != nil {
+		return bookingErrorResponse(c, err)
 	}
 
-	return c.JSON(http.StatusCreated,response)
+	return c.JSON(http.StatusCreated, response)
+}
+
+func (h *handler) GetMyBookings(c *echo.Context) error {
+
+	userId, ok := getCurrentUserById(c)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, httpresponse.Error{
+			Code:    http.StatusUnauthorized,
+			Message: "Unauthorized",
+		})
+	}
+	bookings, err := h.service.GetMyBookings(userId)
+	if err != nil {
+		return bookingErrorResponse(c, err)
+	}
+	return c.JSON(http.StatusOK, bookings)
 }
