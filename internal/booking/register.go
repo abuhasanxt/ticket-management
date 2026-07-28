@@ -1,7 +1,9 @@
 package booking
 
 import (
+	"gotickets/internal/auth"
 	"gotickets/internal/event"
+	"gotickets/internal/middleware"
 
 	"github.com/labstack/echo/v5"
 	"gorm.io/gorm"
@@ -13,8 +15,9 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 
 	svc := NewService(bookingRepo,eventRepo)
 	handler := NewHandler(svc)
+	jwtService:=auth.NewJWTService("")
 
-	api := e.Group("/api/v1/bookings")
+	api := e.Group("/api/v1/bookings",middleware.AuthMiddleware(jwtService))
 
 	api.POST("", handler.CreateBooking)
 	// api.GET("", handler.GetEvents)
