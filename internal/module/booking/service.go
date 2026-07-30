@@ -2,8 +2,8 @@ package booking
 
 import (
 	"errors"
-	"gotickets/internal/booking/dto"
-	"gotickets/internal/event"
+	"gotickets/internal/module/booking/dto"
+	"gotickets/internal/module/event"
 
 	"github.com/google/uuid"
 )

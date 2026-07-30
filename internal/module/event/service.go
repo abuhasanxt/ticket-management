@@ -1,6 +1,6 @@
 package event
 
-import "gotickets/internal/event/dto"
+import "gotickets/internal/module/event/dto"
 
 type service struct {
 	repo Repository

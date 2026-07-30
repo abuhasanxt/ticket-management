@@ -2,7 +2,7 @@ package booking
 
 import (
 	"errors"
-	"gotickets/internal/event"
+	"gotickets/internal/module/event"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"

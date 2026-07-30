@@ -1,10 +1,10 @@
 package server
 
 import (
-	"gotickets/internal/booking"
+	"gotickets/internal/module/booking"
 	"gotickets/internal/config"
-	"gotickets/internal/event"
-	"gotickets/internal/user"
+	"gotickets/internal/module/event"
+	"gotickets/internal/module/user"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
